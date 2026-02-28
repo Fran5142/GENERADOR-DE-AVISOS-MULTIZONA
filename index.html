@@ -404,17 +404,38 @@ function aplicarNegritasEspeciales(html) {
             document.getElementById("contenidoPagina").innerHTML = tituloHtml + "<div style='height:15px;'></div>" + cuerpoHtml;
         }
 
-        async function generarPDF(formatoSeleccionado) {
+async function generarPDF(formatoSeleccionado) {
             const { jsPDF } = window.jspdf;
             const elemento = document.getElementById("vistaPrevia");
-            const canvas = await html2canvas(elemento, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+            
+            // Generamos el canvas con alta calidad
+            const canvas = await html2canvas(elemento, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: "#ffffff" 
+            });
+            
             const imgData = canvas.toDataURL("image/jpeg", 0.8);
-            const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: formatoSeleccionado, compress: true });
+            
+            // Creamos el PDF con el formato elegido (Letter o Oficio)
+            const pdf = new jsPDF({ 
+                orientation: "portrait", 
+                unit: "mm", 
+                format: formatoSeleccionado, 
+                compress: true 
+            });
+            
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
+            
             pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-            const sufijo = (formatoSeleccionado === 'letter') ? "_Carta" : "_Oficio";
-            pdf.save((document.getElementById("nombrePDF").value.trim() || "Aviso_Meteorologico") + sufijo + ".pdf");
+            
+            // --- CORRECCIÓN DE NOMBRE AQUÍ ---
+            // Obtenemos el nombre del input o usamos uno por defecto si está vacío
+            const nombreArchivo = document.getElementById("nombrePDF").value.trim() || "Aviso_Meteorologico";
+            
+            // Guardamos directamente sin añadir "_Carta" o "_Oficio"
+            pdf.save(nombreArchivo + ".pdf");
         }
     </script>
 </body>
