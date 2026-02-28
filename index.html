@@ -335,13 +335,16 @@
 
         function todoMayusculas(texto) { return texto.toUpperCase(); }
 
-        function aplicarNegritasEspeciales(html) {
-            // Reglas estándar de tu código original
+function aplicarNegritasEspeciales(html) {
+            // Reglas estándar
             html = html.replace(/(A\.-[^<]*(\.|$|<br>))/g, "<b>$1</b>");
             html = html.replace(/(D\.-[^<]*(\.|$|<br>))/g, "<b>$1</b>");
             html = html.replace(/(B\.-[\s\S]*?:)/g, "<b>$1</b>");
             html = html.replace(/(C\.-[\s\S]*?:)/g, "<b>$1</b>");
-            html = html.replace(/(SECTOR[^\n<]+)/g, "<b>$1</b>");
+
+            // --- CORRECCIÓN AQUÍ: Solo aplica negrita si SECTOR está al inicio de la línea ---
+            // Esto evita que "SECTORES ABIERTOS" dentro de un párrafo se ponga en negrita
+            html = html.replace(/(^|<br>)(SECTOR[^\n<]+)/g, "$1<b>$2</b>");
             
             // Regla para TRAMOS (Guafo a Golfo de Penas, etc)
             const regexTramos = /(^|<br>|(?<=\.\s))([A-ZÑÁÉÍÓÚ\s]+ A [A-ZÑÁÉÍÓÚ\s]+(\:|\.))/g;
@@ -355,15 +358,12 @@
             const regexDias = /((?:LUNES|MARTES|MIERCOLES|MIÉRCOLES|JUEVES|VIERNES|SABADO|SÁBADO|DOMINGO)\s\d{1,2}(?:\:|\.(?!\d)))/g;
             html = html.replace(regexDias, "<b>$1</b>");
 
-// --- NUEVA LÓGICA DE EXCEPCIÓN ---
-            // Definimos términos meteorológicos que NO deben llevar negrita (incluye mezclas con "A")
+            // LÓGICA DE EXCEPCIÓN PARA TÉRMINOS METEOROLÓGICOS
             const terminosSinNegrita = [
                 "POSTFRONTAL", "INESTABLE", "CUÑA", "MARGEN ANTICICLONICO", "ANTICICLONICO", 
                 "FRONTAL", "MARGEN FRONTAL", "INESTABILIDAD", "INESTABILIDAD POSTFRONTAL", 
                 "CIRCULACION CICLONICA", "PASO A MARGEN FRONTAL", "VAGUADA COSTERA", 
                 "LIGERA INESTABILIDAD", "PREFRONTAL",
-                
-                // Mezclas comunes conectadas con "A"
                 "CUÑA A MARGEN ANTICICLONICO", "MARGEN ANTICICLONICO A CUÑA",
                 "POSTFRONTAL A INESTABLE", "INESTABLE A POSTFRONTAL",
                 "POSTFRONTAL A FRONTAL", "FRONTAL A POSTFRONTAL",
@@ -375,14 +375,11 @@
             ];
 
             terminosSinNegrita.forEach(termino => {
-                // Se busca el término (con o sin punto final) que haya sido puesto en negrita
-                // La regex maneja el término exacto y el término seguido de un punto
                 const regexLimpieza = new RegExp(`<b>(${termino}\\.?)</b>`, "gi");
                 html = html.replace(regexLimpieza, "$1");
             });
 
             terminosSinNegrita.forEach(termino => {
-                // Si el término quedó envuelto en <b> por las reglas anteriores, se lo quitamos
                 const regexLimpieza = new RegExp(`<b>(${termino})</b>`, "gi");
                 html = html.replace(regexLimpieza, "$1");
             });
@@ -423,11 +420,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
